@@ -18,6 +18,24 @@
     when: ansible_distribution == "Ubuntu"
 
 
+- hosts: app_servers
+  become: true
+  tasks:
+
+  - name: install unzip
+    package:
+      name: unzip
+
+  - name: install terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/0.12.28/terraform_0.12.28_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      mode: 0755
+      owner: root
+      group: root
+
+
 
 - hosts: app_servers
   become: true
@@ -52,9 +70,63 @@
       name: mariadb
     when: ansible_distribution == "CentOS"
 
+  - name: install apache and php for CentOS servers
+    tags: apache,centos,httpd
+    yum:
+      name:
+        - httpd
+        - php
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+  - name: start httpd (CentOS)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: started
+      enabled: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: change email address for admin in apache config file
+    tags: apache,centos,httpd
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^ServerAdmin'
+      line: ServerAdmin abknowledge63@gmail.com
+    when: ansible_distribution == "CentOS"
+    register: httpd
+
+  - name: restart httpd (CentOS)
+    tags: apache,centos,httpd
+    service:
+      name: httpd
+      state: restart
+    when: httpd.changed
+
     
   - name: install samba package
     package:
       name: samba
       state: latest
 
+  - name: create ansible1 user
+    tags: always
+    user:
+      name: ansible1
+      groups: root
+
+
+  - name: add ssh key for ansible1
+    tags: always
+    authorized_key:
+      user: ansible1
+      key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILprKoDuLwTXExR4otfLhIpWofP+IBAG7ricmtVT0sOl ansbile"
+
+  - name: add sudoers file for ansible1
+    tags: always
+    copy:
+      src: sudoer_ansible1
+      dest: /etc/sudoers.d/ansible1
+      owner: root
+      group: root
+      mode: 0440
