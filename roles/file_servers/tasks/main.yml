@@ -1,0 +1,8 @@
+- name: install apache and php for Ubuntu servers
+  tags: Ubuntu,apache,php
+  apt:
+   name:
+     - apache2
+     - libapache2-mod-php
+   state: latest
+  when: ansible_distribution == "Ubuntu"
