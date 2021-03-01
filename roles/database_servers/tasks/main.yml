@@ -1,5 +1,6 @@
-- name: install mariadb package on (Ubuntu)
-  tags: Ubuntu,mariadb,samba
+- name: install mariadb-server package on (Ubuntu)
+  tags: Ubuntu,mariadb-server,samba
   apt:
-    name: mariadb
+    name: mariadb-server
+    state: latest
   when: ansible_distribution == "Ubuntu"

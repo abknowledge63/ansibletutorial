@@ -1,0 +1,10 @@
+- name: install python-pycurl
+  apt: pkg=python-pycurl state=latest
+
+
+- name: install mariadb package on (Ubuntu)
+  tags: Ubuntu,mariadb,samba
+  apt:
+    name: mariadb
+    state: latest
+  when: ansible_distribution == "Ubuntu"
